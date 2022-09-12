@@ -4,7 +4,7 @@ import { fetchDiscordMembers } from './workers/fetchDiscordMembers';
 import { schedule } from './utils';
 import { config, safePrintConfig } from './config';
 import { initDiscordClient } from './bot';
-import { Firebase, initFirebase } from './firebase';
+import { Firebase, initFirebase } from './model/firebase';
 import { fetchStarknetIds } from './workers/fetchStartknetIds';
 import { applyRules } from './workers/applyRules';
 

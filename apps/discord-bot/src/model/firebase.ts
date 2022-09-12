@@ -7,7 +7,7 @@ import {
     Firestore,
     getFirestore,
 } from 'firebase/firestore';
-import { Config } from './config';
+import { Config } from '../config';
 
 export function initFirebase(config: Config) {
     const app = initializeApp(config.firebaseConfig);

@@ -158,7 +158,8 @@ export async function handleAddRuleSubmitModal(
   }
 
   const { rulesOfGuild } = useAppContext().firebase;
-  await setDoc(doc(rulesOfGuild(interaction.guild.id)), {
+  let rule = doc(rulesOfGuild(interaction.guild.id))
+  await setDoc(rule, {
     roleId: selectedRoleId,
     tokenAddress,
     minBalance,

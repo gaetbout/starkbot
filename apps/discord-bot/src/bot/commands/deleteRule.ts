@@ -11,7 +11,7 @@ import {
 const { ActionRowBuilder, SelectMenuBuilder } = require('discord.js');
 
 import { deleteDoc, doc, getDoc, getDocs } from 'firebase/firestore';
-import { formatRule, formatShortTokenAddress } from './utils';
+import { formatRule, formatShortTokenAddress, numberOfUserWithRole } from './utils';
 
 const ROLE_TO_DELETE_CACHE_ID = 'role-to-dete-cache-id';
 
@@ -122,9 +122,4 @@ async function getRuleInfo(interaction: SelectMenuInteraction) {
   const role = interaction.guild.roles.cache.get(ruleSnapshot.data().roleId);
   let usersWithRoleSize = await numberOfUserWithRole(interaction, role);
   return { ruleId: selectedRuleId, role, numberOfUsers: usersWithRoleSize }
-}
-
-async function numberOfUserWithRole(interaction: SelectMenuInteraction, role: Role) {
-  let usersWithRole = (await interaction.guild.members.fetch()).filter(member => member.roles.cache.has(role.id))
-  return usersWithRole.size
 }
