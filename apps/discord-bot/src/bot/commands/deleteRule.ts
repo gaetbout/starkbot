@@ -13,9 +13,7 @@ const { ActionRowBuilder, SelectMenuBuilder } = require('discord.js');
 import { deleteDoc, doc, getDoc, getDocs } from 'firebase/firestore';
 import { formatRule, formatShortTokenAddress, numberOfUserWithRole } from './utils';
 
-const ROLE_TO_DELETE_CACHE_ID = 'role-to-dete-cache-id';
-
-let currentRuleIdToDelete: string;
+const cache = new Map<string, string>();
 
 export const deleteRuleCommandName = 'starkbot-delete-rule';
 export const deleteRuleId = `${deleteRuleCommandName}-role`;
@@ -60,14 +58,18 @@ export async function askKeepOrRemoveRole(interaction: SelectMenuInteraction) {
         .setStyle(ButtonStyle.Success),
     );
   const { ruleId, role, numberOfUsers } = await getRuleInfo(interaction)
-  currentRuleIdToDelete = ruleId;
+
+  cache.set(interaction.member.user.id, ruleId);
+
   await interaction.reply({ content: `Should I remove the role "${role.name}" assigned to ${numberOfUsers} user(s)?`, components: [row] });
 }
 
 export async function handleDeleteRule(interaction: ButtonInteraction, shouldRemoveRole: boolean) {
+
+  const currentRuleIdToDelete = cache.get(interaction.member.user.id);
   const ruleDocRef = doc(
     useAppContext().firebase.rulesOfGuild(interaction.guild.id),
-    currentRuleIdToDelete
+    currentRuleIdToDelete,
   );
   const ruleSnapshot = await getDoc(ruleDocRef);
   const rule = ruleSnapshot.data();
@@ -77,6 +79,7 @@ export async function handleDeleteRule(interaction: ButtonInteraction, shouldRem
     await removeRoleToUsers(interaction, role)
   }
   await deleteDoc(ruleDocRef);
+  cache.delete(currentRuleIdToDelete);
   await interaction.reply({
 
     content: `Deleted rule: ${formatRule({

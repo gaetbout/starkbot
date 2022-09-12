@@ -7,6 +7,6 @@ export async function handleModalSubmit(interaction: ModalSubmitInteraction) {
             await handleAddRuleSubmitModal(interaction);
             return;
         default:
-            console.log(`Modal for "${interaction.customId}" isn't supported yet`)
+            console.error(`Modal for "${interaction.customId}" isn't supported yet`)
     }
 }

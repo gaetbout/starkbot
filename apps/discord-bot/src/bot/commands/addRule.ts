@@ -77,9 +77,7 @@ export async function handleAddRuleSelectRole(
   await interaction.showModal(modal);
 }
 
-export async function handleAddRuleSubmitModal(
-  interaction: ModalSubmitInteraction
-) {
+export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteraction) {
   const selectedRoleId = cache.get(interaction.member.user.id);
   if (!selectedRoleId) {
     console.error('No role selected');

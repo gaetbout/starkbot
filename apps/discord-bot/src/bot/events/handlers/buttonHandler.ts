@@ -10,6 +10,6 @@ export async function handleButton(interaction: ButtonInteraction) {
             await handleDeleteRule(interaction, true);
             return;
         default:
-            console.log(`Button for "${interaction.customId}" isn't supported yet`)
+            console.error(`Button for "${interaction.customId}" isn't supported yet`)
     }
 }

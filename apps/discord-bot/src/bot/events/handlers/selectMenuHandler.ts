@@ -12,6 +12,6 @@ export async function handleSelectMenu(interaction: SelectMenuInteraction) {
             await handleAddRuleSelectRole(interaction);
             return;
         default:
-            console.log(`Select for "${interaction.customId}" isn't supported yet`)
+            console.error(`Select for "${interaction.customId}" isn't supported yet`)
     }
 }
