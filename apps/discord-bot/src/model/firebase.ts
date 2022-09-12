@@ -7,7 +7,8 @@ import {
     Firestore,
     getFirestore,
 } from 'firebase/firestore';
-import { Config } from '../config';
+import { Config } from '../configuration/config';
+import { logger } from '../configuration/logger';
 
 export function initFirebase(config: Config) {
     const app = initializeApp(config.firebaseConfig);
@@ -41,6 +42,7 @@ export function initFirebase(config: Config) {
             `starknetAccounts/${accountAddress}/tokens`
         );
 
+    logger.info('Firebase client initialized');
     return {
         app,
         firestore,

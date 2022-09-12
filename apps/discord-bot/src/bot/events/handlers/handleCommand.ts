@@ -1,4 +1,4 @@
-import { logger } from "apps/discord-bot/src/logger";
+import { logger } from "apps/discord-bot/src/configuration/logger";
 import { BaseInteraction, Client, CommandInteraction } from "discord.js";
 import { Command, commandList } from "../../commands/commandList";
 

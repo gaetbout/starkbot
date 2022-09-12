@@ -1,13 +1,8 @@
 import { Client } from 'discord.js';
-
-import { fetchDiscordMembers } from './workers/fetchDiscordMembers';
-import { schedule } from './utils';
-import { config, safePrintConfig } from './config';
+import { config, safePrintConfig } from './configuration/config';
 import { initDiscordClient } from './bot';
 import { Firebase, initFirebase } from './model/firebase';
-import { fetchStarknetIds } from './workers/fetchStartknetIds';
-import { applyRules } from './workers/applyRules';
-import { logger } from './logger';
+import { doLoopOnWorkers } from './workers/workerManager';
 
 export interface AppContext {
   discordClient: Client;
@@ -26,18 +21,12 @@ const runApp = async () => {
   safePrintConfig();
 
   const discordClient = await initDiscordClient(config);
-  logger.info('Discord client initialized');
-
   const firebase = initFirebase(config);
-  logger.info('Firebase client initialized');
-
   _appContext = { discordClient, firebase };
 
-  await Promise.all([
-    schedule(fetchDiscordMembers, 10),
-    schedule(fetchStarknetIds, 10),
-    schedule(applyRules, 10),
-  ]);
+  await doLoopOnWorkers();
 };
 
+
 runApp();
+

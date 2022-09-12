@@ -1,4 +1,4 @@
-import { logger } from "apps/discord-bot/src/logger";
+import { logger } from "apps/discord-bot/src/configuration/logger";
 import { ModalSubmitInteraction } from "discord.js";
 import { addRuleCommandName, handleAddRuleSubmitModal } from "../../commands/addRule";
 

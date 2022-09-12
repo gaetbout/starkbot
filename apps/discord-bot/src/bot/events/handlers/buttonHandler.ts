@@ -1,4 +1,4 @@
-import { logger } from "apps/discord-bot/src/logger";
+import { logger } from "apps/discord-bot/src/configuration/logger";
 import { ButtonInteraction } from "discord.js";
 import { handleDeleteRule, keepRoleFromUserButtonId, removeRoleFromUserButtonId } from "../../commands/deleteRule";
 

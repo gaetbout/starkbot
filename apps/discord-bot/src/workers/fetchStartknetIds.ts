@@ -3,8 +3,8 @@ import axios from 'axios';
 import { useAppContext } from '..';
 import { DiscordGuildDoc } from '../model/firebase';
 import { defaultProvider, stark, uint256 } from 'starknet';
-import { config } from '../config';
-import { logger } from '../logger';
+import { config } from '../configuration/config';
+import { logger } from '../configuration/logger';
 
 export async function fetchStarknetIds() {
   const appContext = useAppContext();

@@ -1,7 +1,7 @@
 import { OAuth2Guild } from 'discord.js';
 import { doc, setDoc } from 'firebase/firestore';
 import { useAppContext } from '..';
-import { logger } from '../logger';
+import { logger } from '../configuration/logger';
 
 export async function fetchDiscordMembers() {
   const guilds = await useAppContext().discordClient.guilds.fetch();

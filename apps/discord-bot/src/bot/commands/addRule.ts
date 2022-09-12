@@ -8,7 +8,7 @@ import {
 
 import { doc, setDoc } from 'firebase/firestore';
 import { number } from 'starknet';
-import { logger } from '../../logger';
+import { logger } from '../../configuration/logger';
 import { formatRule } from './utils';
 
 const DEFAULT_MIN_VALUE = 1;

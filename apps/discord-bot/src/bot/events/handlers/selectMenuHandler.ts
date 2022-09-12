@@ -1,4 +1,4 @@
-import { logger } from "apps/discord-bot/src/logger";
+import { logger } from "apps/discord-bot/src/configuration/logger";
 import { SelectMenuInteraction } from "discord.js";
 import { addRuleRoleId, handleAddRuleSelectRole } from "../../commands/addRule";
 import { askKeepOrRemoveRole, deleteRuleId } from "../../commands/deleteRule";
