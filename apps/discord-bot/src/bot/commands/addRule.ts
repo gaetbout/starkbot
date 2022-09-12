@@ -80,30 +80,21 @@ export async function handleAddRuleSelectRole(
 }
 
 export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteraction) {
-  const selectedRoleId = cache.get(interaction.member.user.id);
-  if (!selectedRoleId) {
-    logger.warn('No role selected');
-    await interaction.reply({
-      content: 'No role selected',
-    });
-    return;
-  }
-  cache.delete(selectedRoleId);
-  const selectedRole = interaction.guild.roles.cache.get(selectedRoleId);
-  if (!selectedRole) {
-    logger.warn('Role not found');
-    await interaction.reply({
-      content: 'Role not found',
-    });
-    return;
-  }
+  if (!(await selectedRoleIdValid(interaction))) return;
 
+  const selectedRoleId = getSelectedRoleId(interaction);
+
+  if (!(await selectedRoleValid(interaction, selectedRoleId))) return;
   if (!(await addressValid(interaction))) return;
   if (!(await balancesValid(interaction))) return;
 
+
+  const selectedRole = getSelectedRole(interaction, selectedRoleId);
   const tokenAddress = getTokenAdress(interaction);
   const minBalance = getMinBalanceFrom(interaction);
   const maxBalance = getMaxBalanceFrom(interaction);
+
+  cache.delete(selectedRoleId);
 
   const { rulesOfGuild } = useAppContext().firebase;
   let rule = doc(rulesOfGuild(interaction.guild.id))
@@ -122,6 +113,33 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
       maxBalance,
     })}`,
   });
+}
+
+
+
+async function selectedRoleIdValid(interaction: ModalSubmitInteraction): Promise<boolean> {
+  const selectedRoleId = getSelectedRoleId(interaction);
+  if (!selectedRoleId) {
+    logger.warn('No role selected');
+    await interaction.reply({
+      content: 'No role selected',
+    });
+    return false;
+  }
+  return true;
+}
+
+
+async function selectedRoleValid(interaction: ModalSubmitInteraction, roleId: string): Promise<boolean> {
+  const selectedRole = getSelectedRole(interaction, roleId);
+  if (!selectedRole) {
+    logger.warn('Role not found');
+    await interaction.reply({
+      content: 'Role not found',
+    });
+    return;
+  }
+
 }
 
 async function addressValid(interaction: ModalSubmitInteraction): Promise<boolean> {
@@ -171,6 +189,16 @@ async function balancesValid(interaction: ModalSubmitInteraction): Promise<boole
     return false;
   }
   return true;
+}
+
+
+// Internal functions
+function getSelectedRoleId(interaction: ModalSubmitInteraction): string {
+  return cache.get(interaction.member.user.id);
+}
+
+function getSelectedRole(interaction: ModalSubmitInteraction, roleId: string): Role {
+  return interaction.guild.roles.cache.get(roleId);
 }
 
 function getTokenAdress(interaction: ModalSubmitInteraction): string {
