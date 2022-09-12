@@ -23,6 +23,7 @@ export async function listRulesCommand(client: Client, interaction: CommandInter
       const nbOfUsers = await numberOfUserWithRole(interaction, role);
       return { role: role.name, nbOfUsers, tokenAddress, minBalance, maxBalance };
     }));
+
   await interaction.followUp({
     content: `You have ${rules.length} active rules: \n${rules
       .map((rule) => formatRule(rule))

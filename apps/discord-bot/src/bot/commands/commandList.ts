@@ -1,7 +1,8 @@
 import {
     ChatInputApplicationCommandData,
     CommandInteraction,
-    Client
+    Client,
+    PermissionFlagsBits
 } from 'discord.js';
 
 // Importing all commands func and names 
@@ -25,13 +26,15 @@ const AddRule: Command = {
             minValue: 1,
             maxValue: 3
         }
-    ]
+    ],
+    defaultMemberPermissions: PermissionFlagsBits.Administrator
 };
 
 const DeleteRule: Command = {
     name: deleteRuleCommandName,
     description: 'Delete a starkbot rule',
-    run: deleteRuleCommand
+    run: deleteRuleCommand,
+    defaultMemberPermissions: PermissionFlagsBits.Administrator
 };
 
 const ListRules: Command = {
