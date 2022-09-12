@@ -4,6 +4,7 @@ import {
   Client,
   ModalSubmitInteraction,
   SelectMenuInteraction,
+  Role,
 } from 'discord.js';
 
 import { doc, setDoc } from 'firebase/firestore';
@@ -97,60 +98,12 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
     return;
   }
 
-  const tokenAddress = interaction.fields.getTextInputValue(
-    addRuleTokenAddressId
-  );
-  if (tokenAddress == '') {
-    logger.warn('No token address provided');
-    await interaction.reply({
-      content: '⚠️ No token address provided',
-    });
-    return;
-  }
-  if (!number.isHex(tokenAddress)) {
-    logger.warn('Token adress is not a valid hex string');
-    await interaction.reply({
-      content: '⚠️ Token address is not a valid hex string',
-    });
-    return;
-  }
+  if (!(await addressValid(interaction))) return;
+  if (!(await balancesValid(interaction))) return;
 
-  let minBalanceInput =
-    interaction.fields.getTextInputValue(addRuleMinBalanceId);
-  if (!minBalanceInput) {
-    minBalanceInput = `${DEFAULT_MIN_VALUE}`;
-  }
-
-  const minBalance = parseInt(minBalanceInput);
-  if (isNaN(minBalance) || minBalance < 1) {
-    logger.warn('Wrong value for minimum balance, positive integer is required');
-    await interaction.reply({
-      content: 'Wrong value for minBalance',
-    });
-    return;
-  }
-
-  let maxBalanceInput =
-    interaction.fields.getTextInputValue(addRuleMaxBalanceId);
-  if (!maxBalanceInput) {
-    maxBalanceInput = `${Number.MAX_SAFE_INTEGER}`;
-  }
-  const maxBalance = parseInt(maxBalanceInput);
-  if (isNaN(maxBalance) || maxBalance < 0) {
-    logger.warn('Wrong value for maximum balance, positive integer is required');
-    await interaction.reply({
-      content: 'Wrong value for maxBalance',
-    });
-    return;
-  }
-
-  if (maxBalance < minBalance) {
-    logger.warn('Maximum must be bigger than minimum');
-    await interaction.reply({
-      content: 'Min bigger than max',
-    });
-    return;
-  }
+  const tokenAddress = getTokenAdress(interaction);
+  const minBalance = getMinBalanceFrom(interaction);
+  const maxBalance = getMaxBalanceFrom(interaction);
 
   const { rulesOfGuild } = useAppContext().firebase;
   let rule = doc(rulesOfGuild(interaction.guild.id))
@@ -170,3 +123,75 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
     })}`,
   });
 }
+
+async function addressValid(interaction: ModalSubmitInteraction): Promise<boolean> {
+  const tokenAddress = getTokenAdress(interaction)
+  if (tokenAddress == '') {
+    logger.warn('No token address provided');
+    await interaction.reply({
+      content: '⚠️ No token address provided',
+    });
+    return false;
+  }
+  if (!number.isHex(tokenAddress)) {
+    logger.warn('Token adress is not a valid hex string');
+    await interaction.reply({
+      content: '⚠️ Token address is not a valid hex string',
+    });
+    return false;
+  }
+  return true;
+}
+
+
+async function balancesValid(interaction: ModalSubmitInteraction): Promise<boolean> {
+  const minBalance = getMinBalanceFrom(interaction)
+  if (isNaN(minBalance) || minBalance < 1) {
+    logger.warn('Wrong value for minimum balance, positive integer is required');
+    await interaction.reply({
+      content: 'Wrong value for minBalance',
+    });
+    return false;
+  }
+
+  const maxBalance = getMaxBalanceFrom(interaction);
+  if (isNaN(maxBalance) || maxBalance < 0) {
+    logger.warn('Wrong value for maximum balance, positive integer is required');
+    await interaction.reply({
+      content: 'Wrong value for maxBalance',
+    });
+    return false;
+  }
+
+  if (maxBalance < minBalance) {
+    logger.warn('Maximum must be bigger than minimum');
+    await interaction.reply({
+      content: 'Min bigger than max',
+    });
+    return false;
+  }
+  return true;
+}
+
+function getTokenAdress(interaction: ModalSubmitInteraction): string {
+  return interaction.fields.getTextInputValue(addRuleTokenAddressId);
+}
+
+function getMinBalanceFrom(interaction: ModalSubmitInteraction): number {
+  let minBalanceInput =
+    interaction.fields.getTextInputValue(addRuleMinBalanceId);
+  if (!minBalanceInput) {
+    minBalanceInput = `${DEFAULT_MIN_VALUE}`;
+  }
+  return parseInt(minBalanceInput);
+}
+
+function getMaxBalanceFrom(interaction: ModalSubmitInteraction): number {
+  let maxBalanceInput =
+    interaction.fields.getTextInputValue(addRuleMinBalanceId);
+  if (!maxBalanceInput) {
+    maxBalanceInput = `${Number.MAX_SAFE_INTEGER}`;
+  }
+  return parseInt(maxBalanceInput);
+}
+

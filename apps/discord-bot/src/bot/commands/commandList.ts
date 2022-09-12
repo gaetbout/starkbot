@@ -3,7 +3,7 @@ import {
     CommandInteraction,
     Client,
     PermissionFlagsBits,
-    ApplicationCommandOptionType
+    // ApplicationCommandOptionType
 } from 'discord.js';
 
 // Importing all commands func and names 
