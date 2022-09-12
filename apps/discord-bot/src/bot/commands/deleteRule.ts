@@ -61,7 +61,7 @@ export async function askKeepOrRemoveRole(interaction: SelectMenuInteraction) {
     );
   const { ruleId, role, numberOfUsers } = await getRuleInfo(interaction)
   currentRuleIdToDelete = ruleId;
-  await interaction.reply({ content: `Should I remove the role "${role.name}" assigned to ${numberOfUsers} user?`, components: [row] });
+  await interaction.reply({ content: `Should I remove the role "${role.name}" assigned to ${numberOfUsers} user(s)?`, components: [row] });
 }
 
 export async function handleDeleteRule(interaction: ButtonInteraction, shouldRemoveRole: boolean) {

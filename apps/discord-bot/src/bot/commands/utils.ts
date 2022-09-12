@@ -1,7 +1,7 @@
-export function formatRule({ role, tokenAddress, minBalance, maxBalance, }:
-    { role: string; tokenAddress: string; minBalance: number; maxBalance: number; }) {
+export function formatRule({ role, nbOfUsers, tokenAddress, minBalance, maxBalance, }:
+    { role: string; nbOfUsers?: number; tokenAddress: string; minBalance: number; maxBalance: number; }) {
     return `\`\`\`
-    • Role: ${role}
+    • Role: ${role} (${nbOfUsers ? (nbOfUsers.toString()) : '0'} user(s))
     • Token Address: ${tokenAddress}
     • Min Balance: ${minBalance}
     • Max Balance: ${maxBalance}\`\`\``;
