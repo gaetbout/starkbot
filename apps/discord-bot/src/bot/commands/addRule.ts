@@ -8,6 +8,7 @@ import {
 
 import { doc, setDoc } from 'firebase/firestore';
 import { number } from 'starknet';
+import { logger } from '../../logger';
 import { formatRule } from './utils';
 
 const DEFAULT_MIN_VALUE = 1;
@@ -80,7 +81,7 @@ export async function handleAddRuleSelectRole(
 export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteraction) {
   const selectedRoleId = cache.get(interaction.member.user.id);
   if (!selectedRoleId) {
-    console.error('No role selected');
+    logger.warn('No role selected');
     await interaction.reply({
       content: 'No role selected',
     });
@@ -89,7 +90,7 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
   cache.delete(selectedRoleId);
   const selectedRole = interaction.guild.roles.cache.get(selectedRoleId);
   if (!selectedRole) {
-    console.error('Role not found');
+    logger.warn('Role not found');
     await interaction.reply({
       content: 'Role not found',
     });
@@ -100,14 +101,14 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
     addRuleTokenAddressId
   );
   if (tokenAddress == '') {
-    console.error('No token address provided');
+    logger.warn('No token address provided');
     await interaction.reply({
       content: '⚠️ No token address provided',
     });
     return;
   }
   if (!number.isHex(tokenAddress)) {
-    console.error('Token adress is not a valid hex string');
+    logger.warn('Token adress is not a valid hex string');
     await interaction.reply({
       content: '⚠️ Token address is not a valid hex string',
     });
@@ -122,9 +123,7 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
 
   const minBalance = parseInt(minBalanceInput);
   if (isNaN(minBalance) || minBalance < 1) {
-    console.error(
-      'Wrong value for minimum balance, positive integer is required'
-    );
+    logger.warn('Wrong value for minimum balance, positive integer is required');
     await interaction.reply({
       content: 'Wrong value for minBalance',
     });
@@ -138,9 +137,7 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
   }
   const maxBalance = parseInt(maxBalanceInput);
   if (isNaN(maxBalance) || maxBalance < 0) {
-    console.error(
-      'Wrong value for maximum balance, positive integer is required'
-    );
+    logger.warn('Wrong value for maximum balance, positive integer is required');
     await interaction.reply({
       content: 'Wrong value for maxBalance',
     });
@@ -148,7 +145,7 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
   }
 
   if (maxBalance < minBalance) {
-    console.error('Maximum must be bigger than minimum');
+    logger.warn('Maximum must be bigger than minimum');
     await interaction.reply({
       content: 'Min bigger than max',
     });

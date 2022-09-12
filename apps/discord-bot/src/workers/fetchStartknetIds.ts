@@ -4,6 +4,7 @@ import { useAppContext } from '..';
 import { DiscordGuildDoc } from '../model/firebase';
 import { defaultProvider, stark, uint256 } from 'starknet';
 import { config } from '../config';
+import { logger } from '../logger';
 
 export async function fetchStarknetIds() {
   const appContext = useAppContext();
@@ -14,8 +15,7 @@ export async function fetchStarknetIds() {
 }
 
 async function fetchStarknetIdsForGuild(guild: DiscordGuildDoc) {
-  console.log('Fetching Starknet IDs for guild:', guild.name);
-
+  logger.info(`Fetching Starknet IDs for guild: ${guild.name}`);
   const appContext = useAppContext();
   const members = await getDocs(appContext.firebase.membersOfGuild(guild.id));
   for (const member of members.docs) {
@@ -58,7 +58,7 @@ async function fetchStarknetIdsForMember(discordMemberId: string) {
   } catch (error) {
     // TODO
     // THERE IS AN ERROR HERE ATM
-    // console.error(error);
+    // logger.error(error);
     return null;
   }
 }

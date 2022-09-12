@@ -1,20 +1,18 @@
+import { logger } from "apps/discord-bot/src/logger";
 import { BaseInteraction, Client, CommandInteraction } from "discord.js";
 import { Command, commandList } from "../../commands/commandList";
 
 export async function handleCommand(client: Client, interaction: CommandInteraction): Promise<void> {
     const command = commandList.find((c) => c.name === interaction.command.name);
     if (!command) {
-        console.log(`No command found for "${command.name}"`);
+        logger.warn(`Command not found: ${command.name}`);
         return;
     };
-
     try {
-        console.log(`Running command: ${command.name}`);
+        logger.info(`Running command: ${command.name}`);
         await command.run(client, interaction);
     } catch (error) {
-        console.error(error);
-        interaction.followUp({
-            content: `An error has occurred while running command ${command.name}`,
-        });
+        logger.error(error);
+        interaction.followUp({ content: `An error has occurred while running command ${command.name}` });
     }
 }

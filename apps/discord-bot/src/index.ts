@@ -7,6 +7,7 @@ import { initDiscordClient } from './bot';
 import { Firebase, initFirebase } from './model/firebase';
 import { fetchStarknetIds } from './workers/fetchStartknetIds';
 import { applyRules } from './workers/applyRules';
+import { logger } from './logger';
 
 export interface AppContext {
   discordClient: Client;
@@ -25,10 +26,10 @@ const runApp = async () => {
   safePrintConfig();
 
   const discordClient = await initDiscordClient(config);
-  console.log('Discord client initialized');
+  logger.info('Discord client initialized');
 
   const firebase = initFirebase(config);
-  console.log('Firebase client initialized');
+  logger.info('Firebase client initialized');
 
   _appContext = { discordClient, firebase };
 

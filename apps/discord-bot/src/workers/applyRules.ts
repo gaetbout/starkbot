@@ -2,6 +2,7 @@ import { OAuth2Guild } from 'discord.js';
 import { getDocs, query, where } from 'firebase/firestore';
 import { defaultProvider, number, stark } from 'starknet';
 import { useAppContext } from '..';
+import { logger } from '../logger';
 
 export async function applyRules() {
   const guilds = await useAppContext().discordClient.guilds.fetch();
@@ -12,7 +13,7 @@ export async function applyRules() {
 
 export async function applyRulesForGuild(g: OAuth2Guild) {
   const guild = await g.fetch();
-  console.log('Apply rules for guild:', guild.name);
+  logger.info(`Apply rules for guild: ${guild.name}`);
 
   const { rulesOfGuild } = useAppContext().firebase;
   const rulesSnapshot = await getDocs(rulesOfGuild(guild.id));
@@ -38,19 +39,19 @@ export async function applyRulesForGuild(g: OAuth2Guild) {
           (balance < rule.minBalance || balance > rule.maxBalance) &&
           member.roles.cache.has(rule.roleId)
         ) {
-          console.log('Remove  role:', member.roles.cache.get(rule.roleId).name);
+          logger.info(`Remove  role: ${member.roles.cache.get(rule.roleId).name}`);
           await member.roles.remove(rule.roleId);
         } else if (
           balance >= rule.minBalance &&
           balance <= rule.maxBalance &&
           !member.roles.cache.has(rule.roleId)
         ) {
-          console.log('Add role:', rule.roleId);
+          logger.info(`Add role: ${rule.roleId}`);
           await member.roles.add(rule.roleId);
         }
       }
     } catch (error) {
-      console.error(error);
+      logger.error(error);
     }
   }
 }
