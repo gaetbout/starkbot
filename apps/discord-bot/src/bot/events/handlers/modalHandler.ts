@@ -14,6 +14,7 @@ export async function handleModalSubmit(interaction: ModalSubmitInteraction) {
         }
     } catch (error) {
         if (error instanceof IllegalArgumentException) {
+            logger.warn(error.message);
             await interaction.reply({
                 content: error.message,
             });

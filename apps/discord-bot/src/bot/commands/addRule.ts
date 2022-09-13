@@ -89,7 +89,6 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
   const maxBalance = getMaxBalance(interaction);
 
   if (maxBalance < minBalance) {
-    logger.warn('Maximum must be bigger than minimum');
     throw new IllegalArgumentException('Maximum must be bigger than minimum')
   }
   cache.delete(selectedRoleId);
@@ -117,7 +116,6 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
 function getSelectedRoleId(interaction: ModalSubmitInteraction): string {
   const selectedRoleId = cache.get(interaction.member.user.id);
   if (!selectedRoleId) {
-    logger.warn('No role selected');
     throw new IllegalArgumentException('No role selected');
   }
   return selectedRoleId;
@@ -126,7 +124,6 @@ function getSelectedRoleId(interaction: ModalSubmitInteraction): string {
 function getSelectedRole(interaction: ModalSubmitInteraction, roleId: string): Role {
   const selectedRole = interaction.guild.roles.cache.get(roleId);
   if (!selectedRole) {
-    logger.warn('Role not found');
     throw new IllegalArgumentException('Role not found');
   }
   return selectedRole;
@@ -136,11 +133,9 @@ function getSelectedRole(interaction: ModalSubmitInteraction, roleId: string): R
 function getTokenAdress(interaction: ModalSubmitInteraction): string {
   const tokenAddress = interaction.fields.getTextInputValue(addRuleTokenAddressId);
   if (tokenAddress == '') {
-    logger.warn('No token address provided');
     throw new IllegalArgumentException('⚠️ No token address provided');
   }
   if (!number.isHex(tokenAddress)) {
-    logger.warn('Token adress is not a valid hex string');
     throw new IllegalArgumentException('⚠️ Token address is not a valid hex string');
   }
   return tokenAddress;
@@ -154,7 +149,6 @@ function getMinBalance(interaction: ModalSubmitInteraction): number {
   }
   const minBalance = parseInt(minBalanceInput);
   if (isNaN(minBalance) || minBalance < 1) {
-    logger.warn('Wrong value for minimum balance, positive integer is required');
     throw new IllegalArgumentException('Wrong value for minimum balance, positive integer is required');
   }
   return minBalance;
@@ -168,7 +162,6 @@ function getMaxBalance(interaction: ModalSubmitInteraction): number {
   }
   const maxBalance = parseInt(maxBalanceInput);
   if (isNaN(maxBalance) || maxBalance < 0) {
-    logger.warn('Wrong value for maximum balance, positive integer is required');
     throw new IllegalArgumentException('Wrong value for maximum balance, positive integer is required');
   }
   return maxBalance;
