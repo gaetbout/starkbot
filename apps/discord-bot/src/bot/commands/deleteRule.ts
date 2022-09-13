@@ -1,16 +1,8 @@
 import { useAppContext } from '@starkbot/discord-bot';
-import {
-  CommandInteraction,
-  Client,
-  SelectMenuInteraction,
-  ButtonBuilder,
-  ButtonStyle,
-  Role,
-  ButtonInteraction,
-} from 'discord.js';
+import { CommandInteraction, Client, SelectMenuInteraction, ButtonBuilder, ButtonStyle, Role, ButtonInteraction, BaseInteraction, } from 'discord.js';
 const { ActionRowBuilder, SelectMenuBuilder } = require('discord.js');
 
-import { deleteDoc, doc, getDoc, getDocs } from 'firebase/firestore';
+import { deleteRuleForGuild, getRuleForGuild, getRulesForGuild } from '../../models/rule';
 import { formatRule, formatShortTokenAddress, numberOfUserWithRole } from './utils';
 
 const cache = new Map<string, string>();
@@ -57,33 +49,32 @@ export async function askKeepOrRemoveRole(interaction: SelectMenuInteraction) {
         .setLabel('Keep assigned role')
         .setStyle(ButtonStyle.Success),
     );
-  const { ruleId, role, numberOfUsers } = await getRuleInfo(interaction)
+  const [selectedRuleId] = interaction.values;
+  const { ruleId, role, nbOfUsers } = await getRuleInfo(interaction, selectedRuleId)
 
   cache.set(interaction.member.user.id, ruleId);
 
-  await interaction.reply({ content: `Should I remove the role "${role.name}" assigned to ${numberOfUsers} user(s)?`, components: [row] });
+  await interaction.reply({ content: `Should I remove the role "${role.name}" assigned to ${nbOfUsers} user(s)?`, components: [row] });
 }
 
 export async function handleDeleteRule(interaction: ButtonInteraction, shouldRemoveRole: boolean) {
 
   const currentRuleIdToDelete = cache.get(interaction.member.user.id);
-  const ruleDocRef = doc(
-    useAppContext().firebase.rulesOfGuild(interaction.guild.id),
-    currentRuleIdToDelete,
-  );
-  const ruleSnapshot = await getDoc(ruleDocRef);
-  const rule = ruleSnapshot.data();
+  let { nbOfUsers } = await getRuleInfo(interaction, currentRuleIdToDelete);
+  const rule = await deleteRuleForGuild(interaction.guild, currentRuleIdToDelete)
   const role = interaction.guild.roles.cache.get(rule.roleId);
 
   if (shouldRemoveRole) {
     await removeRoleToUsers(interaction, role)
+    nbOfUsers = 0;
   }
-  await deleteDoc(ruleDocRef);
-  cache.delete(currentRuleIdToDelete);
-  await interaction.reply({
 
+  cache.delete(currentRuleIdToDelete);
+
+  await interaction.reply({
     content: `Deleted rule: ${formatRule({
       role: role.name,
+      nbOfUsers,
       tokenAddress: rule.tokenAddress,
       minBalance: rule.minBalance,
       maxBalance: rule.maxBalance,
@@ -99,9 +90,7 @@ async function removeRoleToUsers(interaction: ButtonInteraction, role: Role) {
 }
 
 async function getAllRules(interaction: CommandInteraction) {
-  const { rulesOfGuild } = useAppContext().firebase;
-  const rulesSnapshot = await getDocs(rulesOfGuild(interaction.guild.id));
-  const ruleOptions = rulesSnapshot.docs.map((doc) => {
+  const ruleOptions = (await getRulesForGuild(interaction.guild)).map((doc) => {
     const { roleId, tokenAddress, minBalance, maxBalance } = doc.data();
     const role = interaction.guild.roles.cache.get(roleId);
     return {
@@ -115,14 +104,9 @@ async function getAllRules(interaction: CommandInteraction) {
   return ruleOptions
 }
 
-async function getRuleInfo(interaction: SelectMenuInteraction) {
-  const [selectedRuleId] = interaction.values;
-  const ruleDocRef = doc(
-    useAppContext().firebase.rulesOfGuild(interaction.guild.id),
-    selectedRuleId
-  )
-  const ruleSnapshot = await getDoc(ruleDocRef);
-  const role = interaction.guild.roles.cache.get(ruleSnapshot.data().roleId);
+async function getRuleInfo(interaction: BaseInteraction, ruleId: string) {
+  const rule = await getRuleForGuild(interaction.guild, ruleId)
+  const role = interaction.guild.roles.cache.get(rule.roleId);
   let usersWithRoleSize = await numberOfUserWithRole(interaction, role);
-  return { ruleId: selectedRuleId, role, numberOfUsers: usersWithRoleSize }
+  return { ruleId: ruleId, role, nbOfUsers: usersWithRoleSize }
 }

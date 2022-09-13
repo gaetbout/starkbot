@@ -11,6 +11,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { number } from 'starknet';
 import { logger } from '../../configuration/logger';
 import { IllegalArgumentException } from '../../errors/illegalArgumentError';
+import { createRuleForGuild } from '../../models/rule';
 import { formatRule } from './utils';
 
 const DEFAULT_MIN_VALUE = 1;
@@ -93,14 +94,7 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
   }
   cache.delete(selectedRoleId);
 
-  const { rulesOfGuild } = useAppContext().firebase;
-  let rule = doc(rulesOfGuild(interaction.guild.id))
-  await setDoc(rule, {
-    roleId: selectedRoleId,
-    tokenAddress,
-    minBalance,
-    maxBalance,
-  });
+  await createRuleForGuild(interaction.guild, selectedRoleId, tokenAddress, minBalance, maxBalance);
 
   await interaction.reply({
     content: `Created new rule: ${formatRule({

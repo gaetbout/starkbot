@@ -1,8 +1,5 @@
 import {
-    ChatInputApplicationCommandData,
-    CommandInteraction,
-    Client,
-    PermissionFlagsBits,
+    ChatInputApplicationCommandData, CommandInteraction, Client, PermissionFlagsBits,
     // ApplicationCommandOptionType
 } from 'discord.js';
 

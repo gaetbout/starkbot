@@ -9,6 +9,7 @@ import {
 } from 'firebase/firestore';
 import { Config } from '../configuration/config';
 import { logger } from '../configuration/logger';
+import { RuleDoc } from './rule';
 
 export function initFirebase(config: Config) {
     const app = initializeApp(config.firebaseConfig);
@@ -72,13 +73,6 @@ export interface DiscordMemberDoc {
 export interface DiscordRoleDoc {
     id: string;
     name: string;
-}
-
-export interface RuleDoc {
-    roleId: string;
-    tokenAddress: string;
-    minBalance: number;
-    maxBalance: number;
 }
 
 export interface StarknetIdDoc {

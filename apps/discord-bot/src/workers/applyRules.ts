@@ -1,9 +1,9 @@
-import { GuildMember, GuildMemberEditData, OAuth2Guild } from 'discord.js';
+import { GuildMember, OAuth2Guild } from 'discord.js';
 import { getDocs, query, where } from 'firebase/firestore';
 import { defaultProvider, number, stark } from 'starknet';
 import { useAppContext } from '..';
 import { logger } from '../configuration/logger';
-import { RuleDoc } from '../models/firebase';
+import { getRulesForGuild, RuleDoc } from '../models/rule';
 
 export async function applyRules() {
   const guilds = await useAppContext().discordClient.guilds.fetch();
@@ -15,10 +15,7 @@ export async function applyRules() {
 async function applyRulesForGuild(g: OAuth2Guild) {
   const guild = await g.fetch();
   logger.info(`Apply rules for guild: ${guild.name}`);
-
-  const { rulesOfGuild } = useAppContext().firebase;
-  const rulesSnapshot = await getDocs(rulesOfGuild(guild.id));
-  const rules = rulesSnapshot.docs.map((doc) => doc.data());
+  const rules = (await getRulesForGuild(g)).map((doc) => doc.data());
 
   const guildMembers = await guild.members.fetch();
   for (const [id, member] of guildMembers) {
@@ -60,9 +57,7 @@ async function applyRulesForMember(id: string, member: GuildMember, rules: RuleD
 }
 
 
-async function getAccountAddress(
-  discordMemberId: string
-): Promise<string | null> {
+async function getAccountAddress(discordMemberId: string): Promise<string | null> {
   const starknetIdsColRef = useAppContext().firebase.starknetIds;
   const q = query(starknetIdsColRef,
     where('discordMemberId', '==', discordMemberId)

@@ -56,8 +56,7 @@ async function fetchStarknetIdsForMember(discordMemberId: string) {
       id: data.token_id,
     };
   } catch (error) {
-    // TODO
-    // THERE IS AN ERROR HERE ATM
+    // TODO THERE IS AN ERROR HERE ATM
     // logger.error(error);
     return null;
   }
