@@ -1,7 +1,7 @@
 import { doc, getDocs, setDoc } from 'firebase/firestore';
 import axios from 'axios';
 import { useAppContext } from '..';
-import { DiscordGuildDoc } from '../model/firebase';
+import { DiscordGuildDoc } from '../models/firebase';
 import { defaultProvider, stark, uint256 } from 'starknet';
 import { config } from '../configuration/config';
 import { logger } from '../configuration/logger';

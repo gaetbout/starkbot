@@ -10,6 +10,7 @@ import {
 import { doc, setDoc } from 'firebase/firestore';
 import { number } from 'starknet';
 import { logger } from '../../configuration/logger';
+import { IllegalArgumentException } from '../../errors/illegalArgumentError';
 import { formatRule } from './utils';
 
 const DEFAULT_MIN_VALUE = 1;
@@ -80,20 +81,17 @@ export async function handleAddRuleSelectRole(
 }
 
 export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteraction) {
-  if (!(await selectedRoleIdValid(interaction))) return;
 
   const selectedRoleId = getSelectedRoleId(interaction);
-
-  if (!(await selectedRoleValid(interaction, selectedRoleId))) return;
-  if (!(await addressValid(interaction))) return;
-  if (!(await balancesValid(interaction))) return;
-
-
   const selectedRole = getSelectedRole(interaction, selectedRoleId);
   const tokenAddress = getTokenAdress(interaction);
-  const minBalance = getMinBalanceFrom(interaction);
-  const maxBalance = getMaxBalanceFrom(interaction);
+  const minBalance = getMinBalance(interaction);
+  const maxBalance = getMaxBalance(interaction);
 
+  if (maxBalance < minBalance) {
+    logger.warn('Maximum must be bigger than minimum');
+    throw new IllegalArgumentException('Maximum must be bigger than minimum')
+  }
   cache.delete(selectedRoleId);
 
   const { rulesOfGuild } = useAppContext().firebase;
@@ -116,110 +114,62 @@ export async function handleAddRuleSubmitModal(interaction: ModalSubmitInteracti
 }
 
 
-
-async function selectedRoleIdValid(interaction: ModalSubmitInteraction): Promise<boolean> {
-  const selectedRoleId = getSelectedRoleId(interaction);
+function getSelectedRoleId(interaction: ModalSubmitInteraction): string {
+  const selectedRoleId = cache.get(interaction.member.user.id);
   if (!selectedRoleId) {
     logger.warn('No role selected');
-    await interaction.reply({
-      content: 'No role selected',
-    });
-    return false;
+    throw new IllegalArgumentException('No role selected');
   }
-  return true;
-}
-
-
-async function selectedRoleValid(interaction: ModalSubmitInteraction, roleId: string): Promise<boolean> {
-  const selectedRole = getSelectedRole(interaction, roleId);
-  if (!selectedRole) {
-    logger.warn('Role not found');
-    await interaction.reply({
-      content: 'Role not found',
-    });
-    return;
-  }
-
-}
-
-async function addressValid(interaction: ModalSubmitInteraction): Promise<boolean> {
-  const tokenAddress = getTokenAdress(interaction)
-  if (tokenAddress == '') {
-    logger.warn('No token address provided');
-    await interaction.reply({
-      content: '⚠️ No token address provided',
-    });
-    return false;
-  }
-  if (!number.isHex(tokenAddress)) {
-    logger.warn('Token adress is not a valid hex string');
-    await interaction.reply({
-      content: '⚠️ Token address is not a valid hex string',
-    });
-    return false;
-  }
-  return true;
-}
-
-
-async function balancesValid(interaction: ModalSubmitInteraction): Promise<boolean> {
-  const minBalance = getMinBalanceFrom(interaction)
-  if (isNaN(minBalance) || minBalance < 1) {
-    logger.warn('Wrong value for minimum balance, positive integer is required');
-    await interaction.reply({
-      content: 'Wrong value for minBalance',
-    });
-    return false;
-  }
-
-  const maxBalance = getMaxBalanceFrom(interaction);
-  if (isNaN(maxBalance) || maxBalance < 0) {
-    logger.warn('Wrong value for maximum balance, positive integer is required');
-    await interaction.reply({
-      content: 'Wrong value for maxBalance',
-    });
-    return false;
-  }
-
-  if (maxBalance < minBalance) {
-    logger.warn('Maximum must be bigger than minimum');
-    await interaction.reply({
-      content: 'Min bigger than max',
-    });
-    return false;
-  }
-  return true;
-}
-
-
-// Internal functions
-function getSelectedRoleId(interaction: ModalSubmitInteraction): string {
-  return cache.get(interaction.member.user.id);
+  return selectedRoleId;
 }
 
 function getSelectedRole(interaction: ModalSubmitInteraction, roleId: string): Role {
-  return interaction.guild.roles.cache.get(roleId);
+  const selectedRole = interaction.guild.roles.cache.get(roleId);
+  if (!selectedRole) {
+    logger.warn('Role not found');
+    throw new IllegalArgumentException('Role not found');
+  }
+  return selectedRole;
 }
+
 
 function getTokenAdress(interaction: ModalSubmitInteraction): string {
-  return interaction.fields.getTextInputValue(addRuleTokenAddressId);
+  const tokenAddress = interaction.fields.getTextInputValue(addRuleTokenAddressId);
+  if (tokenAddress == '') {
+    logger.warn('No token address provided');
+    throw new IllegalArgumentException('⚠️ No token address provided');
+  }
+  if (!number.isHex(tokenAddress)) {
+    logger.warn('Token adress is not a valid hex string');
+    throw new IllegalArgumentException('⚠️ Token address is not a valid hex string');
+  }
+  return tokenAddress;
 }
 
-function getMinBalanceFrom(interaction: ModalSubmitInteraction): number {
+function getMinBalance(interaction: ModalSubmitInteraction): number {
   let minBalanceInput =
     interaction.fields.getTextInputValue(addRuleMinBalanceId);
   if (!minBalanceInput) {
     minBalanceInput = `${DEFAULT_MIN_VALUE}`;
   }
-  return parseInt(minBalanceInput);
+  const minBalance = parseInt(minBalanceInput);
+  if (isNaN(minBalance) || minBalance < 1) {
+    logger.warn('Wrong value for minimum balance, positive integer is required');
+    throw new IllegalArgumentException('Wrong value for minimum balance, positive integer is required');
+  }
+  return minBalance;
 }
 
-function getMaxBalanceFrom(interaction: ModalSubmitInteraction): number {
+function getMaxBalance(interaction: ModalSubmitInteraction): number {
   let maxBalanceInput =
-    interaction.fields.getTextInputValue(addRuleMinBalanceId);
+    interaction.fields.getTextInputValue(addRuleMaxBalanceId);
   if (!maxBalanceInput) {
     maxBalanceInput = `${Number.MAX_SAFE_INTEGER}`;
   }
-  return parseInt(maxBalanceInput);
+  const maxBalance = parseInt(maxBalanceInput);
+  if (isNaN(maxBalance) || maxBalance < 0) {
+    logger.warn('Wrong value for maximum balance, positive integer is required');
+    throw new IllegalArgumentException('Wrong value for maximum balance, positive integer is required');
+  }
+  return maxBalance;
 }
-

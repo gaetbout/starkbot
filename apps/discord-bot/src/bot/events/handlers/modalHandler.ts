@@ -1,13 +1,24 @@
 import { logger } from "apps/discord-bot/src/configuration/logger";
+import { IllegalArgumentException } from "apps/discord-bot/src/errors/illegalArgumentError";
 import { ModalSubmitInteraction } from "discord.js";
 import { addRuleCommandName, handleAddRuleSubmitModal } from "../../commands/addRule";
 
 export async function handleModalSubmit(interaction: ModalSubmitInteraction) {
-    switch (interaction.customId) {
-        case addRuleCommandName:
-            await handleAddRuleSubmitModal(interaction);
-            return;
-        default:
-            logger.warn(`Modal for "${interaction.customId}" isn't supported yet`)
+    try {
+        switch (interaction.customId) {
+            case addRuleCommandName:
+                await handleAddRuleSubmitModal(interaction);
+                return;
+            default:
+                logger.warn(`Modal for "${interaction.customId}" isn't supported yet`)
+        }
+    } catch (error) {
+        if (error instanceof IllegalArgumentException) {
+            await interaction.reply({
+                content: error.message,
+            });
+        } else {
+            logger.error(error)
+        }
     }
 }

@@ -3,7 +3,7 @@ import { getDocs, query, where } from 'firebase/firestore';
 import { defaultProvider, number, stark } from 'starknet';
 import { useAppContext } from '..';
 import { logger } from '../configuration/logger';
-import { RuleDoc } from '../model/firebase';
+import { RuleDoc } from '../models/firebase';
 
 export async function applyRules() {
   const guilds = await useAppContext().discordClient.guilds.fetch();

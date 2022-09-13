@@ -1,7 +1,7 @@
 import { Client } from 'discord.js';
 import { config, safePrintConfig } from './configuration/config';
 import { initDiscordClient } from './bot';
-import { Firebase, initFirebase } from './model/firebase';
+import { Firebase, initFirebase } from './models/firebase';
 import { doLoopOnWorkers } from './workers/workerManager';
 
 export interface AppContext {
